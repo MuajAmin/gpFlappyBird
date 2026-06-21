@@ -105,3 +105,7 @@ venv.bak/
 
 .idea/
 .vscode/
+
+# Local generation outputs
+pp/
+neat_checkpoints/

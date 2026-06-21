@@ -9,6 +9,7 @@ import os
 
 import cgp
 from sprites import *
+import neat
 
 
 class GameMode(Enum):
@@ -20,8 +21,11 @@ class GameMode(Enum):
 class Game:
     def __init__(self):
         os.environ['SDL_VIDEO_WINDOW_POS'] = '200,300'
-        pg.mixer.pre_init()
-        pg.mixer.init()
+        try:
+            pg.mixer.pre_init()
+            pg.mixer.init()
+        except pg.error:
+            print("Warning: Audio device not found. Running without sound.")
         pg.init()
         self._screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pg.display.set_caption(TITLE)
@@ -52,6 +56,9 @@ class Game:
         self._max_score = 0  # max score of all the birds in this round (generation)
         self.current_generation = 0
 
+        # Game mode: 'CGP' or 'NEAT'
+        self.mode = 'CGP'
+
         # create the initial population
         self.pop = cgp.create_population(self.n_birds)
 
@@ -72,6 +79,35 @@ class Game:
             AIBird(self, self._bird_image, x, y, self.pop[i])
         # instantiate the pipes
         self._spawn_pipe(80)  # the first pipe with xas the baseline
+        while self._front_pipe.rect.x < SCREEN_WIDTH:
+            self._spawn_pipe()
+        # create the background
+        Background(self, self._background_image)
+
+    def reset_neat(self, genomes, config):
+        """
+        Initialize a new generation of NEAT birds.
+        Called by eval_genomes() in main_neat.py.
+        """
+        if VERBOSE:
+            print(f'--------Generation: {self.current_generation}. Max score so far: {self._max_score_so_far}-------')
+        self._max_score = 0
+        self.current_generation += 1
+        self._min_pipe_space = MIN_PIPE_SPACE
+        self._min_pipe_gap = MIN_PIPE_GAP
+        self.mode = 'NEAT'
+        # empty all current sprites
+        for s in self.all_sprites:
+            s.kill()
+        self._human_bird = None
+        # instantiate a NEATBird for each genome
+        for genome_id, genome in genomes:
+            net = neat.nn.FeedForwardNetwork.create(genome, config)
+            x = random.randint(20, 200)
+            y = random.randint(SCREEN_HEIGHT // 4, SCREEN_HEIGHT // 4 * 3)
+            NEATBird(self, self._bird_image, x, y, genome, net)
+        # spawn initial pipes
+        self._spawn_pipe(80)
         while self._front_pipe.rect.x < SCREEN_WIDTH:
             self._spawn_pipe()
         # create the background
@@ -128,6 +164,9 @@ class Game:
             self._draw()
             self._clock.tick(self._fps)
         if not self.running:
+            return
+        # Skip CGP evolution if in NEAT mode (handled externally by neat-python)
+        if self.mode == 'NEAT':
             return
         # one generation finished and perform evolution again
         # if current score is very low, then we use a large mutation rate
@@ -220,15 +259,22 @@ class Game:
 
     def try_flap(self, bird):
         """
-        Try to flap the bird if needed
+        Try to flap the bird if needed.
+        Works for both AIBird (CGP) and NEATBird (NEAT).
         """
-        # compute the tree inputs: v, h, g
+        # compute the inputs: v, h, g
         front_bottom_pipe = self._get_front_bottom_pipe(bird)
         h = front_bottom_pipe.rect.x - bird.rect.x
         v = front_bottom_pipe.rect.y - bird.rect.y
         g = front_bottom_pipe.gap
-        if bird.eval(v, h, g) > 0:
-            bird.flap()
+        output = bird.eval(v, h, g)
+        # CGP outputs any value > 0 to flap; NEAT uses tanh so > 0.5 threshold
+        if isinstance(bird, NEATBird):
+            if output > 0.5:
+                bird.flap()
+        else:
+            if output > 0:
+                bird.flap()
 
     def _update(self):
         """

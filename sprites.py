@@ -77,6 +77,27 @@ class AIBird(Bird):
         return self.brain.eval(v, h, g)
 
 
+class NEATBird(Bird):
+    """
+    A bird controlled by a NEAT neural network.
+    """
+    def __init__(self, game, image: pg.Surface, x, y, genome, net):
+        super().__init__(game, image, x, y)
+        self.genome = genome
+        self.net = net
+        # Initialize genome fitness
+        self.genome.fitness = 0
+
+    def kill(self):
+        super().kill()
+        self.genome.fitness = self.score
+
+    def eval(self, v, h, g):
+        """Activate the NEAT network. Returns output > 0.5 check is done in game loop."""
+        output = self.net.activate((v, h, g, self._vel_y))
+        return output[0]
+
+
 class PipeType(enum.Enum):
     TOP = 0
     BOTTOM = 1

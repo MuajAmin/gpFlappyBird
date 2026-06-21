@@ -6,8 +6,10 @@ SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 500
 TITLE = 'Flappy Bird AI via Evolutionary Cartesian Genetic Programming'
 FPS = 60
-IMG_DIR = './img'
-SND_DIR = './snd'
+import os as _os
+_BASE_DIR = _os.path.dirname(_os.path.abspath(__file__))
+IMG_DIR = _os.path.join(_BASE_DIR, 'img')
+SND_DIR = _os.path.join(_BASE_DIR, 'snd')
 FONT_NAME = 'Arial'
 FONT_SIZE = 20
 WHITE = (255, 255, 255)
@@ -45,7 +47,7 @@ VERBOSE = False
 PP_FORMULA = True
 PP_FORMULA_NUM_DIGITS = 5
 PP_FORMULA_SIMPLIFICATION = True
-PP_GRAPH_VISUALIZATION = False
+PP_GRAPH_VISUALIZATION = False  # requires pygraphviz (needs Microsoft C++ Build Tools on Windows)
 
 # for reproduction by setting an integer value; otherwise, set `None`
 RANDOM_SEED = 14256

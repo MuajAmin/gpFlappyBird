@@ -12,22 +12,31 @@ We use cartesian genetic programming (a special form of evolutionary computation
 ## Features
 
 - Compared with other AI flappy bird projects, this game is **more difficult**. Instead of a fixed number, the horizontal distance between adjacent pipes and the gap are all random within a given range.
-- With a small population of size 10, it typically takes **less than 50 generations** to get a *proficient* bird who can fly a very, very long distance before death.
 - Support adding a human player (a blue bird) at any time to compete with the AI birds.
-- No neural networks are involved (if this can count as a feature).
-- It is easy to understand and straightforward to implement Cartesian genetic programming. No extra libraries are needed.
+- **Multiple AI Algorithms Supported**:
+  - **Cartesian Genetic Programming (CGP)**: Evolve arithmetic math formulas to control the bird. Typically takes less than 50 generations (with a population of 10) to get a proficient bird. Requires no extra libraries.
+  - **NEAT (NeuroEvolution of Augmenting Topologies)**: Evolve neural network topologies and weights. Leverages a 4-input model (including bird's vertical velocity).
+- Easy to run and customize.
 
 ## Installation
 ### Dependencies:
 - Python 3.5 or higher
-- [pygame](https://www.pygame.org/news).  Install it with `pip install pygame`
-### Download this reposity 
+- [pygame](https://www.pygame.org/news). Install it with `pip install pygame`
+- [neat-python](https://neat-python.readthedocs.io/). Install it with `pip install neat-python` (Required for NEAT mode only)
+
+### Download this repository 
 `git clone https://github.com/ShuhuaGao/gpFlappyBird`
 or download as a zip file directly.
+
 ## How to play
 ### Run the game
-First change your directory into the downloaded *gpFlappyBird*. Then, run the game by 
-`python main_entry.py`
+First change your directory into the downloaded *gpFlappyBird*. Then:
+
+- **To run using Cartesian Genetic Programming (CGP)**:
+  `python main_entry.py`
+
+- **To run using NEAT (NeuroEvolution of Augmenting Topologies)**:
+  `python main_neat.py`
 
 ### Shortcut keys
 - <kbd>Ctrl</kbd>+<kbd>H</kbd>: add a human player (a blue bird) at any time
